@@ -17,13 +17,13 @@ args = parser.parse_args()
 props = None
 ents = None
 BASE_URI = "http://www.wikidata.org/entity/"
-BASE_URI2 = "http://www.wikidata.org/prop/direct"
+BASE_URI2 = "http://www.wikidata.org/prop/direct/"
 
-fout = open(os.path.join(args.output,"tmp.txt"), "w")
+fout = open(os.path.join(args.output, "tmp.txt"), "w")
 
 if args.propfilter is not None:
     props = []
-    with open(args.entfilter) as f:
+    with open(args.propfilter) as f:
         for l in f:
             props.append(l.strip())
     props = dict(zip(props, range(len(props))))
@@ -38,23 +38,25 @@ if args.entfilter is not None:
 
 triples_count = 0
 scanned = 0
-with open(args.inputs) as f:
+with open(args.input) as f:
 
     for l in f:
         scanned += 1
         s, p, o = [i.strip().replace(BASE_URI, "").replace(BASE_URI2, "") for i in l.split("\t")]
 
-        if s in ents and p in props and o in ents:
-            triples_count += 1
-            s = ents[s]
-            p = props[p]
-            o = ents[o]
+        if ents is not None:
+            if s in ents and p in props and o in ents:
 
-            fout.write("%s\t%s\t%s\n" % (s, o, p))
+                triples_count += 1
+                s = ents[s]
+                p = props[p]
+                o = ents[o]
+
+                fout.write("%s\t%s\t%s\n" % (s, o, p))
+
 
         if scanned % 1000 == 0:
-            print("%s triples scanned .. " % scanned)
-
+            print("%s percent \t %s triples scanned .. %s triples logged" % (round(float(scanned*100)/83750000, 2), scanned, triples_count))
 
 
 fout.close()
